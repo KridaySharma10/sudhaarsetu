@@ -1,43 +1,60 @@
 'use client';
 
 import React from 'react';
-import { ComposableMap, Geographies, Geography, Marker } from 'react-simple-maps';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
-const geoUrl =
-  "https://raw.githubusercontent.com/datasets/geo-boundaries-world-110m/master/countries.geojson";
-
+// Define the locations with their names and coordinates
 const impactLocations = [
-  { name: 'Delhi, India', coordinates: [77.2090, 28.6139] },
-  { name: 'New York, USA', coordinates: [-74.0060, 40.7128] },
-  { name: 'London, UK', coordinates: [-0.1278, 51.5074] },
-  { name: 'Sydney, Australia', coordinates: [151.2093, -33.8688] },
-  { name: 'Nairobi, Kenya', coordinates: [36.8219, -1.2921] },
-  { name: 'Buenos Aires, Argentina', coordinates: [-58.3816, -34.6037] },
+  { name: 'Delhi, India', coordinates: [28.6139, 77.2090] },
+  { name: 'New York, USA', coordinates: [40.7128, -74.0060] },
+  { name: 'London, UK', coordinates: [51.5074, -0.1278] },
+  { name: 'Sydney, Australia', coordinates: [-33.8688, 151.2093] },
+  { name: 'Nairobi, Kenya', coordinates: [-1.2921, 36.8219] },
+  { name: 'Buenos Aires, Argentina', coordinates: [-34.6037, -58.3816] },
 ];
 
-interface GeographyType {
-  rsmKey: string;
-}
-
-const MapWithMarkers: React.FC = () => {
+// Create a custom marker component using an SVG
+const CustomMarker = () => {
   return (
-    <ComposableMap projection="geoMercator" projectionConfig={{ scale: 160 }}>
-      <Geographies geography={geoUrl}>
-        {({ geographies }: { geographies: GeographyType[] }) =>
-          geographies.map((geo) => (
-            <Geography key={geo.rsmKey} geography={geo} fill="#EAEAEA" stroke="#FFFFFF" />
-          ))
-        }
-      </Geographies>
+    <div style={{ position: 'relative', width: '24px', height: '24px' }}>
+      <svg width="24" height="24" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10" fill="#FF6347" />
+        <text x="12" y="16" fontSize="10" textAnchor="middle" fill="#FFFFFF">
+          ★
+        </text>
+      </svg>
+    </div>
+  );
+};
+
+// Define the MapWithMarkers component
+const MapWithMarkers = () => {
+  // Create a custom icon for the markers
+  const customIcon = L.divIcon({
+    className: 'custom-icon', // Optional: add a custom class for styling
+    html: '<div style="display: flex; align-items: center; justify-content: center;">' +
+          '<svg width="24" height="24" viewBox="0 0 24 24">' +
+          '<circle cx="12" cy="12" r="10" fill="#FF6347" />' +
+          '<text x="12" y="16" fontSize="10" textAnchor="middle" fill="#FFFFFF">★</text>' +
+          '</svg></div>',
+    iconSize: [24, 24], // Size of the icon
+    popupAnchor: [0, -10], // Adjust the popup position
+  });
+
+  return (
+    <MapContainer center={[20, 0]} zoom={2} style={{ height: '100vh', width: '100%' }}>
+      <TileLayer
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      />
       {impactLocations.map(({ name, coordinates }) => (
-        <Marker key={name} coordinates={coordinates}>
-          <circle r={8} fill="#FF6347" />
-          <text textAnchor="middle" y={-10} style={{ fontFamily: "Poppins", fontSize: "10px", fill: "#333" }}>
-            {name}
-          </text>
+        <Marker key={name} position={coordinates} icon={customIcon}>
+          <Popup>{name}</Popup>
         </Marker>
       ))}
-    </ComposableMap>
+    </MapContainer>
   );
 };
 
